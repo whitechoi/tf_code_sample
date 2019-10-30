@@ -1,0 +1,61 @@
+# VPC 피어링 설정, VPC A to VPC B로 가정하고 작성, 아래의 모든값은 임의값으로 실제 사용시 수정해서 사용
+
+resource "aws_vpc_peering_connection" "a-to-b" {  # "a-to-b" 는 피어링 연결 ID
+  vpc_id      = "${aws_vpc."vpc a로 지정한 테라폼 리소스".id}"  
+  peer_vpc_id = "${aws_vpc."vpc b로 지정한 테라폼 리소스".id}"
+  auto_accept = true
+
+  accepter {
+    allow_remote_vpc_dns_resolution = true
+  }
+
+  requester {
+    allow_remote_vpc_dns_resolution = true
+  }
+
+  tags {
+    Name = "VPC-A-TO-VPC-B-Peering"
+  }
+}
+
+# VPC A Route Table
+
+resource "aws_route" "a-to-b-vpc-a-public" {
+  route_table_id            = "${aws_route_table."vpc a의 public route table로 지정한 테라폼 리소스".id}"
+  destination_cidr_block    = "${var."vpc b의 CIDR Range를 지정한 테라폼 변수"}"
+  vpc_peering_connection_id = "${aws_vpc_peering_connection.a-to-b.id}"
+}
+
+resource "aws_route" "a-to-b-vpc-a-private-2a" {
+  route_table_id            = "${aws_route_table."vpc a의 private route table a로 지정한 테라폼 리소스".id}"
+  destination_cidr_block    = "${var."vpc b의 CIDR Range를 지정한 테라폼 변수"}"
+  vpc_peering_connection_id = "${aws_vpc_peering_connection.a-to-b.id}"
+}
+
+resource "aws_route" "a-to-b-vpc-a-private-2c" {
+  route_table_id            = "${aws_route_table."vpc a의 private route table c로 지정한 테라폼 변수".id}"
+  destination_cidr_block    = "${var."vpc b의 CIDR Range를 지정한 테라폼 변수"}"
+  vpc_peering_connection_id = "${aws_vpc_peering_connection.a-to-b.id}"
+}
+
+# VPC B Routing Table
+
+resource "aws_route" "b-to-a-vpc-b-public" {
+  route_table_id            = "${aws_route_table."vpc b의 public route table로 지정한 테라폼 리소스".id}"
+  destination_cidr_block    = "${var."vpc a의 CIDR Range를 지정한 테라폼 변수"}"
+  vpc_peering_connection_id = "${aws_vpc_peering_connection.a-to-b.id}"
+}
+
+
+resource "aws_route" "b-to-a-vpc-b-private-2a" {
+  route_table_id            = "${aws_route_table."vpc b의 private route table a로 지정한 테라폼 리소스".id}"
+  destination_cidr_block    = "${var."vpc a의 CIDR Range를 지정한 테라폼 변수"}"
+  vpc_peering_connection_id = "${aws_vpc_peering_connection.a-to-b.id}"
+}
+
+resource "aws_route" "b-to-a-vpc-b-private-2c" {
+  route_table_id            = "${aws_route_table."vpc b의 private route table c로 지정한 테라폼 리소스".id}"
+  destination_cidr_block    = "${var."vpc a의 CIDR Range를 지정한 테라폼 변수"}"
+  vpc_peering_connection_id = "${aws_vpc_peering_connection.a-to-b.id}"
+}
+

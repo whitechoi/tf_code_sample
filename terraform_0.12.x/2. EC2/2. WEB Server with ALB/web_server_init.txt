@@ -1,0 +1,9 @@
+#cloud-config
+package_upgrade: true
+packages:
+- ntpdate
+- epel-release
+runcmd:
+- sudo yum install -y nginx 
+- sudo systemctl start nginx
+- sudo systemctl enable nginx
